@@ -1,0 +1,304 @@
+import React, { useState } from 'react';
+
+function PonderacaoDimensoes({ navigate, userData, setUserData }) {
+  const [weights, setWeights] = useState(userData.weights || {});
+  const [totalWeight, setTotalWeight] = useState(0);
+
+  const dimensions = [
+    { id: 'nutricional', title: '🍎 Nutrição & Alimentação', color: '#10B981' },
+    { id: 'fisico', title: '💪 Saúde Física & Movimento', color: '#3B82F6' },
+    { id: 'mental', title: '🧠 Saúde Mental & Cognitiva', color: '#8B5CF6' },
+    { id: 'emocional', title: '❤️ Inteligência Emocional', color: '#EF4444' },
+    { id: 'social', title: '👥 Relacionamentos & Conexões', color: '#F59E0B' },
+    { id: 'profissional', title: '💼 Propósito & Carreira', color: '#06B6D4' },
+    { id: 'financeira', title: '💰 Saúde Financeira', color: '#84CC16' },
+    { id: 'espiritual', title: '🙏 Espiritualidade & Transcendência', color: '#A855F7' },
+    { id: 'ambiental', title: '🌍 Ambiente & Sustentabilidade', color: '#059669' },
+    { id: 'criativa', title: '🎨 Criatividade & Expressão', color: '#DC2626' }
+  ];
+
+  const handleWeightChange = (dimensionId, value) => {
+    const newWeights = { ...weights, [dimensionId]: parseInt(value) };
+    setWeights(newWeights);
+    
+    // Calcula total
+    const total = Object.values(newWeights).reduce((sum, weight) => sum + (weight || 0), 0);
+    setTotalWeight(total);
+    
+    // Atualiza userData
+    setUserData(prev => ({
+      ...prev,
+      weights: newWeights
+    }));
+  };
+
+  const distribuirIgualmente = () => {
+    const pesoIgual = Math.floor(100 / dimensions.length);
+    const resto = 100 - (pesoIgual * dimensions.length);
+    
+    const newWeights = {};
+    dimensions.forEach((dim, index) => {
+      newWeights[dim.id] = pesoIgual + (index < resto ? 1 : 0);
+    });
+    
+    setWeights(newWeights);
+    setTotalWeight(100);
+    setUserData(prev => ({ ...prev, weights: newWeights }));
+  };
+
+  const resetarPesos = () => {
+    setWeights({});
+    setTotalWeight(0);
+    setUserData(prev => ({ ...prev, weights: {} }));
+  };
+
+  const calcularResultadoFinal = () => {
+    if (totalWeight === 0) return 0;
+    
+    let pontuacaoTotal = 0;
+    dimensions.forEach(dim => {
+      const score = userData.dimensions?.[dim.id] || 0;
+      const weight = weights[dim.id] || 0;
+      pontuacaoTotal += (score * weight) / 100;
+    });
+    
+    return (pontuacaoTotal / totalWeight * 100).toFixed(1);
+  };
+
+  const getDimensionScore = (dimensionId) => {
+    return userData.dimensions?.[dimensionId] || 0;
+  };
+
+  const getCorDoGradiente = (valor) => {
+    const marrom = { r: 139, g: 69, b: 19 };
+    const lilas = { r: 155, g: 89, b: 182 };
+    
+    const percent = valor / 99;
+    const r = Math.round(marrom.r + (lilas.r - marrom.r) * percent);
+    const g = Math.round(marrom.g + (lilas.g - marrom.g) * percent);
+    const b = Math.round(marrom.b + (lilas.b - marrom.b) * percent);
+    
+    return `rgb(${r}, ${g}, ${b})`;
+  };
+
+  return (
+    <div className="screen-container">
+      <h1 className="section-title">Ponderação das Dimensões</h1>
+      <p className="subtitle">
+        Agora defina o peso (importância) de cada dimensão na sua vida atual. 
+        O total deve somar 100 pontos.
+      </p>
+
+      {/* Controles rápidos */}
+      <div className="quick-controls" style={{
+        display: 'flex',
+        gap: '1rem',
+        marginBottom: '2rem',
+        flexWrap: 'wrap'
+      }}>
+        <button 
+          className="button button-secondary"
+          onClick={distribuirIgualmente}
+          style={{ fontSize: '0.9rem', padding: '12px 20px' }}
+        >
+          ⚖️ Distribuir igualmente
+        </button>
+        <button 
+          className="button button-secondary"
+          onClick={resetarPesos}
+          style={{ fontSize: '0.9rem', padding: '12px 20px' }}
+        >
+          🔄 Resetar tudo
+        </button>
+      </div>
+
+      {/* Indicador de total */}
+      <div className="total-indicator" style={{
+        background: totalWeight === 100 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+        border: `2px solid ${totalWeight === 100 ? '#10B981' : '#EF4444'}`,
+        borderRadius: '12px',
+        padding: '1.5rem',
+        textAlign: 'center',
+        marginBottom: '2rem'
+      }}>
+        <h3 style={{ 
+          color: totalWeight === 100 ? '#10B981' : '#EF4444',
+          marginBottom: '0.5rem'
+        }}>
+          Total: {totalWeight}/100 pontos
+        </h3>
+        <p style={{ color: 'var(--cor-texto-secundario)', fontSize: '0.9rem' }}>
+          {totalWeight === 100 ? '✅ Perfeito! Distribuição completa.' : 
+           totalWeight > 100 ? '⚠️ Excedeu o limite. Reduza alguns pesos.' : 
+           '📝 Continue distribuindo os pontos restantes.'}
+        </p>
+      </div>
+
+      {/* Lista de dimensões para ponderar */}
+      <div className="weighting-list">
+        {dimensions.map((dimension) => {
+          const currentScore = getDimensionScore(dimension.id);
+          const currentWeight = weights[dimension.id] || 0;
+          const contributionScore = currentWeight > 0 ? ((currentScore * currentWeight) / 100).toFixed(1) : 0;
+
+          return (
+            <div key={dimension.id} className="weighting-item" style={{
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid var(--cor-borda)',
+              borderRadius: '16px',
+              padding: '2rem',
+              marginBottom: '1.5rem',
+              transition: 'all 0.3s ease'
+            }}>
+              <div className="weighting-header" style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1.5rem'
+              }}>
+                <h3 style={{ 
+                  color: 'var(--cor-texto-principal)',
+                  margin: 0,
+                  fontSize: '1.1rem'
+                }}>
+                  {dimension.title}
+                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <span style={{ 
+                    color: getCorDoGradiente(currentScore),
+                    fontWeight: '700',
+                    fontSize: '1.1rem'
+                  }}>
+                    Avaliação: {currentScore}
+                  </span>
+                  <span style={{ 
+                    color: dimension.color,
+                    fontWeight: '700',
+                    fontSize: '1.2rem',
+                    minWidth: '60px',
+                    textAlign: 'right'
+                  }}>
+                    {currentWeight}%
+                  </span>
+                </div>
+              </div>
+
+              <div className="weight-slider-container">
+                <input
+                  type="range"
+                  min="0"
+                  max="50"
+                  value={currentWeight}
+                  onChange={(e) => handleWeightChange(dimension.id, e.target.value)}
+                  className="weight-slider"
+                  style={{
+                    width: '100%',
+                    height: '8px',
+                    background: `linear-gradient(90deg, #333 0%, ${dimension.color} ${currentWeight * 2}%, #333 100%)`,
+                    borderRadius: '4px',
+                    outline: 'none',
+                    WebkitAppearance: 'none'
+                  }}
+                />
+                
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '0.8rem',
+                  color: 'var(--cor-texto-terciario)',
+                  marginTop: '0.5rem'
+                }}>
+                  <span>0% - Sem importância</span>
+                  <span>50% - Prioridade máxima</span>
+                </div>
+              </div>
+
+              {currentWeight > 0 && (
+                <div className="contribution-display" style={{
+                  background: 'rgba(139, 92, 246, 0.1)',
+                  border: '1px solid var(--cor-destaque)',
+                  borderRadius: '8px',
+                  padding: '1rem',
+                  marginTop: '1rem'
+                }}>
+                  <p style={{ 
+                    color: 'var(--cor-destaque)',
+                    fontSize: '0.9rem',
+                    margin: 0
+                  }}>
+                    💡 <strong>Contribuição no resultado final:</strong> {contributionScore} pontos
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Resultado final preview */}
+      {totalWeight > 0 && (
+        <div className="final-result-preview" style={{
+          background: 'rgba(139, 92, 246, 0.1)',
+          border: '2px solid var(--cor-destaque)',
+          borderRadius: '20px',
+          padding: '2.5rem',
+          textAlign: 'center',
+          margin: '3rem 0'
+        }}>
+          <h2 style={{ 
+            color: 'var(--cor-destaque)',
+            marginBottom: '1rem',
+            fontSize: '1.5rem'
+          }}>
+            🎯 Seu Resultado Ponderado
+          </h2>
+          <div style={{ 
+            fontSize: '4rem',
+            fontWeight: '900',
+            color: getCorDoGradiente(calcularResultadoFinal()),
+            marginBottom: '1rem'
+          }}>
+            {calcularResultadoFinal()}
+          </div>
+          <p style={{ 
+            color: 'var(--cor-texto-secundario)',
+            fontSize: '1.1rem',
+            marginBottom: '1.5rem'
+          }}>
+            Pontuação integral personalizada
+          </p>
+          <p style={{ 
+            color: 'var(--cor-texto-terciario)',
+            fontSize: '0.9rem',
+            fontStyle: 'italic'
+          }}>
+            Este resultado considera suas avaliações pessoais ponderadas pela importância 
+            que você atribui a cada dimensão da vida.
+          </p>
+        </div>
+      )}
+
+      <div className="button-group">
+        <button 
+          className="button button-secondary"
+          onClick={() => navigate(5)}
+        >
+          ← Voltar às Dimensões
+        </button>
+        <button 
+          className={`button ${totalWeight === 100 ? 'button-primary' : 'button-secondary'}`}
+          onClick={() => {
+            if (totalWeight === 100) {
+              alert('🎉 Parabéns! Sua jornada de autoconhecimento está completa!\n\nResultados salvos com sucesso.');
+            }
+          }}
+          disabled={totalWeight !== 100}
+        >
+          {totalWeight === 100 ? '🏁 Finalizar Jornada' : `Faltam ${100 - totalWeight} pontos`}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default PonderacaoDimensoes;

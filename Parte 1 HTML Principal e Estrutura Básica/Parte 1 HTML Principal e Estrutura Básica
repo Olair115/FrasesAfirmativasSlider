@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr Olair Rafael - Jornada da Nutrição Integral</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fontes Personalizadas -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bibliotecas Adicionais -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Estilos Personalizados -->
+    <style>
+        :root {
+            --cor-primaria: #4CAF50;
+            --cor-secundaria: #81C784;
+            --cor-fundo: #F0F4F0;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: var(--cor-fundo);
+        }
+
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+
+        input[type=number] { 
+            -moz-appearance: textfield; 
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <div class="container max-w-4xl mx-auto p-4 md:p-6">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-green-600">Jornada da Nutrição Integral</h1>
+            <h2 class="text-xl text-gray-600">Dr Olair Rafael</h2>
+        </header>
+
+        <main id="app">
+            <div id="mainApp">
+                <div id="welcomeScreen"></div>
+                <div id="idealizerScreen" class="hidden"></div>
+                <div id="anthropometricScreen" class="hidden"></div>
+                <div id="interpretationScreen" class="hidden"></div>
+                <div id="assessmentScreen" class="hidden"></div>
+                <div id="resultScreen" class="hidden"></div>
+            </div>
+        </main>
+
+        <footer class="text-center mt-8 text-gray-500">
+            <p>&copy; 2025 Dr Olair Rafael - Todos os direitos reservados</p>
+        </footer>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+
+    <script>
+        // Configuração Firebase
+        var firebaseConfig = {
+            // Suas credenciais Firebase aqui
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_DOMINIO",
+            projectId: "SEU_PROJECT_ID"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        firebase.analytics();
+
+        // Função para navegação entre telas
+        function showScreen(screenId) {
+            ['welcomeScreen', 'idealizerScreen', 'anthropometricScreen', 
+             'interpretationScreen', 'assessmentScreen', 'resultScreen']
+            .forEach(screen => {
+                document.getElementById(screen).classList.add('hidden');
+            });
+
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        // Tela de Boas-Vindas
+        function renderWelcomeScreen() {
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            welcomeScreen.innerHTML = `
+                <div class="text-center p-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg shadow-xl">
+                    <h1 class="text-4xl font-bold text-white mb-4">Jornada da Nutrição Integral</h1>
+                    <p class="text-xl text-white mb-6">Transforme sua saúde com ciência e propósito</p>
+                    
+                    <div class="flex justify-center space-x-4">
+                        <button onclick="showScreen('idealizerScreen')" 
+                            class="bg-white text-green-600 font-semibold py-3 px-6 rounded-full hover:bg-green-100 transition">
+                            Iniciar Jornada
+                        </button>
+                        <button onclick="showInformacoes()" 
+                            class="bg-transparent border-2 border-white text-white font-semibold py-3 px-6 rounded-full hover:bg-white hover:text-green-600 transition">
+                            Saiba Mais
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Função para informações adicionais
+        function showInformacoes() {
+            Swal.fire({
+                title: 'Jornada da Nutrição Integral',
+                html: `
+                    <p>Nosso programa oferece uma abordagem personalizada para sua saúde.</p>
+                    <p>Desenvolvido pelo Dr. Olair Rafael, com foco em resultados sustentáveis.</p>
+                `,
+                icon: 'info',
+                confirmButtonText: 'Entendi'
+            });
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            renderWelcomeScreen();
+            showScreen('welcomeScreen');
+        });
+    </script>
+</body>
+</html>

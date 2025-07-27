@@ -1,0 +1,525 @@
+import React, { useState } from 'react';
+
+const TelaAnthropometrica = ({ onVoltar }) => {
+  // ✅ SEÇÃO A: DADOS BÁSICOS
+  const [dadosAntro, setDadosAntro] = useState({
+    idade: '',
+    altura: '',
+    peso: '',
+    genero: '',
+    cep: '', // ← NOVO! Para clima
+    atividadeFisica: 'sedentario'
+  });
+
+  // ✅ SEÇÃO B: CONDIÇÕES ESPECIAIS
+  const [condicoes, setCondicoes] = useState({
+    doencas: [],
+    medicamentos: [],
+    cirurgias: '',
+    sequelas: ''
+  });
+
+  // ✅ SEÇÃO C: RESULTADOS
+  const [resultados, setResultados] = useState(null);
+  
+  // 🌤️ SEÇÃO D: CLIMA/TEMPO
+  const [dadosClima, setDadosClima] = useState(null);
+  const [carregandoClima, setCarregandoClima] = useState(false);
+  // 🧠 INTERPRETAÇÃO INTELIGENTE BASEADA NOS MATERIAIS
+  const getInterpretacaoInteligente = (idade, imc, atividade, genero, condicoes) => {
+    let categoria = "";
+    let texto = "";
+    let alertas = [];
+    let biomarcadores = "";
+
+    // ✅ FAIXAS ETÁRIAS ESPECÍFICAS (baseadas nos materiais)
+    if (idade < 20) {
+      categoria = "🧒 Avaliação Jovem (Percentis)";
+      texto = "Nesta fase, o IMC é avaliado por curvas de percentil da OMS. Ideal entre percentis 5-85. Recomenda-se avaliação profissional especializada.";
+    } 
+    else if (idade >= 78) {
+      // SENESCÊNCIA (78+)
+      if (imc < 23) {
+        categoria = "⚠️ Risco Nutricional (Senescência)";
+        texto = "Para senescência (78+ anos), IMC abaixo de 23 indica alto risco de desnutrição e sarcopenia. Faixa ideal: 23-29.9 kg/m².";
+        alertas.push("Risco de sarcopenia");
+      } else if (imc <= 29.9) {
+        categoria = "✅ Faixa Ideal (Senescência)";
+        texto = "Excelente! Para sua idade (78+ anos), manter IMC entre 23-29.9 está associado à maior reserva funcional e longevidade.";
+      } else {
+        categoria = "⚠️ Monitoramento (Senescência)";
+        texto = "IMC acima de 30 requer monitoramento, mas considera-se a reserva energética importante nesta fase.";
+      }
+    }
+    else if (idade >= 65) {
+      // TERCEIRA IDADE (65-77)
+      if (imc < 22) {
+        categoria = "⚠️ Atenção Nutricional (Idosos)";
+        texto = "Para idosos, IMC abaixo de 22 pode indicar risco de desnutrição e perda de massa muscular. Faixa ideal: 22-27 kg/m².";
+        alertas.push("Possível sarcopenia");
+      } else if (imc <= 27) {
+        categoria = "✅ Faixa Saudável (Maturidade)";
+        texto = "Parabéns! Manter IMC entre 22-27 na maturidade está associado a maior reserva funcional e proteção contra fragilidade.";
+      } else {
+        categoria = "⚠️ Ponto de Atenção (Idosos)";
+        texto = "IMC acima de 27 pode aumentar riscos metabólicos, mas considere composição corporal.";
+      }
+    }
+    else {
+      // ADULTOS (20-64)
+      if (imc < 18.5) {
+        categoria = "⚠️ Abaixo do Peso";
+        texto = "IMC abaixo de 18.5 pode indicar necessidade de maior aporte nutricional e avaliação médica.";
+      } else if (imc < 25) {
+        categoria = "✅ Peso Normal";
+        texto = "Excelente! Seu IMC está na faixa considerada ideal, associada a menores riscos de doenças crônicas.";
+      } else if (imc < 30) {
+        categoria = "⚠️ Sobrepeso";
+        texto = "Seu IMC indica sobrepeso. Esta é uma oportunidade para reavaliar hábitos alimentares e de atividade física.";
+      } else {
+        categoria = "🔴 Obesidade";
+        texto = "Seu IMC está na faixa de obesidade, requerendo atenção especial e acompanhamento profissional.";
+      }
+    }
+
+    // ✅ PARADOXO DE HOLYFIELD (Atletas)
+    if (imc >= 25 && (atividade === 'intensa' || atividade === 'atleta')) {
+      alertas.push("⚡ PARADOXO DE HOLYFIELD: Como você tem atividade física intensa, um IMC elevado pode refletir maior massa muscular, não gordura. Recomenda-se análise de composição corporal.");
+    }
+
+    // ✅ CONDIÇÕES ESPECIAIS
+    if (condicoes.doencas.length > 0) {
+      alertas.push(`🏥 Condições relatadas: ${condicoes.doencas.join(', ')}. Interpretação deve considerar contexto clínico.`);
+    }
+
+    // ✅ BIOMARCADORES (baseado no material)
+    biomarcadores = `📊 IDADE BIOLÓGICA: Considerando IMC + idade cronológica, recomenda-se avaliação de biomarcadores como telômeros, inflamação e metilação do DNA para interpretação mais precisa do envelhecimento biológico.`;
+
+    return {
+      categoria,
+      texto,
+      alertas,
+      biomarcadores
+    };
+  };
+  // 🌤️ INTEGRAÇÃO CLIMA/TEMPO VIA CEP
+  const buscarClimaPorCEP = async (cep) => {
+    if (!cep || cep.length < 8) {
+      alert('Por favor, digite um CEP válido!');
+      return;
+    }
+    
+    setCarregandoClima(true);
+    try {
+      // 1. Primeiro busca coordenadas via CEP (ViaCEP)
+      const responseCEP = await fetch(`https://viacep.com.br/ws/${cep.replace(/\D/g, '')}/json/`);
+      const dadosCEP = await responseCEP.json();
+      
+      if (dadosCEP.erro) {
+        alert('CEP não encontrado!');
+        setCarregandoClima(false);
+        return;
+      }
+
+      // 2. Depois busca clima via coordenadas (OpenWeather)
+      // SUBSTITUA 'SUA_API_KEY_AQUI' pela sua chave do OpenWeatherMap
+      const API_KEY = 'b53f0a0ed4b61af74863b957dfd00030';
+      const responseClima = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${dadosCEP.localidade},BR&appid=${API_KEY}&units=metric&lang=pt_br`
+      );
+      const clima = await responseClima.json();
+      
+      if (clima.cod !== 200) {
+        alert('Erro ao buscar dados climáticos');
+        setCarregandoClima(false);
+        return;
+      }
+      
+      setDadosClima({
+        cidade: dadosCEP.localidade,
+        uf: dadosCEP.uf,
+        bairro: dadosCEP.bairro,
+        temperatura: Math.round(clima.main.temp),
+        umidade: clima.main.humidity,
+        sensacao: Math.round(clima.main.feels_like),
+        descricao: clima.weather[0].description,
+        pressao: clima.main.pressure,
+        vento: clima.wind?.speed || 0
+      });
+      
+    } catch (error) {
+      console.error('Erro ao buscar clima:', error);
+      alert('Erro ao consultar dados climáticos. Verifique sua conexão.');
+    } finally {
+      setCarregandoClima(false);
+    }
+  };
+
+  // 🌡️ CORRELAÇÃO CLIMA x METABOLISMO
+  const getRecomendacaoClimatica = (temperatura, umidade, imc) => {
+    let recomendacao = "";
+    let impactoMetabolico = "";
+    
+    // TEMPERATURA
+    if (temperatura > 32) {
+      recomendacao = "🔥 CALOR EXTREMO: Aumenta necessidade hídrica em 700-1000ml/dia. Metabolismo basal reduz 5-10%. Prefira alimentos leves, frutas e hidratantes.";
+      impactoMetabolico = "Redução metabólica + maior perda de eletrólitos";
+    } else if (temperatura > 25) {
+      recomendacao = "☀️ CALOR MODERADO: Hidratação extra (+500ml/dia). Evite exercícios intensos entre 10h-16h.";
+      impactoMetabolico = "Metabolismo ligeiramente reduzido";
+    } else if (temperatura < 10) {
+      recomendacao = "❄️ FRIO INTENSO: Metabolismo aumenta 10-15% para manter temperatura corporal. Corpo demanda +200-300 kcal/dia. Prefira alimentos termogênicos.";
+      impactoMetabolico = "Aumento significativo do gasto energético";
+    } else if (temperatura < 18) {
+      recomendacao = "🌬️ FRIO MODERADO: Ligeiro aumento metabólico (+5-8%). Boa para exercícios ao ar livre.";
+      impactoMetabolico = "Pequeno aumento metabólico";
+    } else {
+      recomendacao = "🌤️ TEMPERATURA IDEAL: Condições favoráveis para metabolismo equilibrado e atividades físicas.";
+      impactoMetabolico = "Metabolismo em zona de conforto";
+    }
+    
+    // UMIDADE
+    if (umidade > 80) {
+      recomendacao += " 💧 UMIDADE ALTA: Dificulta regulação térmica. Hidrate-se mais e evite roupas sintéticas.";
+    } else if (umidade < 30) {
+      recomendacao += " 🏜️ AR SECO: Aumenta perda de água por respiração. Hidratação redobrada!";
+    }
+    
+    return { recomendacao, impactoMetabolico };
+  };
+  // 🧠 CALCULADORA INTELIGENTE DO IMC
+  const calcularIMC = () => {
+    // Validação básica
+    if (!dadosAntro.idade || !dadosAntro.altura || !dadosAntro.peso || !dadosAntro.genero) {
+      alert('Por favor, preencha todos os campos básicos!');
+      return;
+    }
+
+    const idade = parseInt(dadosAntro.idade);
+    const altura = parseFloat(dadosAntro.altura) / 100; // converter cm para metros
+    const peso = parseFloat(dadosAntro.peso);
+    
+    // Cálculo do IMC
+    const imc = (peso / (altura * altura)).toFixed(1);
+    
+    // Interpretação inteligente baseada nos materiais
+    const interpretacao = getInterpretacaoInteligente(idade, parseFloat(imc), dadosAntro.atividadeFisica, dadosAntro.genero, condicoes);
+    
+    setResultados({
+      imc: imc,
+      classificacao: interpretacao.categoria,
+      interpretacao: interpretacao.texto,
+      alertas: interpretacao.alertas,
+      biomarcadores: interpretacao.biomarcadores
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white p-6">
+      {/* HEADER COM NAVEGAÇÃO */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold mb-2">📊 Análise Anthropométrica</h1>
+        <p className="text-purple-200">Interpretação inteligente e personalizada com dados climáticos</p>
+        
+        {/* BOTÕES DE NAVEGAÇÃO */}
+        <div className="flex flex-wrap justify-center gap-4 mt-6">
+          <button
+            onClick={() => onVoltar()}
+            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            ← Voltar ao Menu
+          </button>
+          
+          <button
+            onClick={() => buscarClimaPorCEP(dadosAntro.cep)}
+            disabled={carregandoClima || !dadosAntro.cep}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          >
+            {carregandoClima ? '⏳ Buscando...' : '🌤️ Analisar Clima'}
+          </button>
+          
+          <button
+            onClick={() => alert('Funcionalidade em desenvolvimento!')}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            📊 Histórico IMC
+          </button>
+          
+          <button
+            onClick={() => alert('Redirecionando para PHILAUTIA...')}
+            className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            💖 PHILAUTIA
+          </button>
+        </div>
+      </div>
+
+      {/* FORMULÁRIO */}
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* ✅ SEÇÃO A: DADOS BÁSICOS */}
+        <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-purple-500/30">
+          <h2 className="text-2xl font-bold mb-4 text-center">📊 Dados Básicos</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* IDADE */}
+            <div>
+              <label className="block text-purple-200 mb-2">Idade (anos)</label>
+              <input
+                type="number"
+                value={dadosAntro.idade}
+                onChange={(e) => setDadosAntro({...dadosAntro, idade: e.target.value})}
+                className="w-full p-3 bg-purple-900/50 border border-purple-500/50 rounded-lg text-white"
+                placeholder="Ex: 35"
+              />
+            </div>
+
+            {/* ALTURA */}
+            <div>
+              <label className="block text-purple-200 mb-2">Altura (cm)</label>
+              <input
+                type="number"
+                value={dadosAntro.altura}
+                onChange={(e) => setDadosAntro({...dadosAntro, altura: e.target.value})}
+                className="w-full p-3 bg-purple-900/50 border border-purple-500/50 rounded-lg text-white"
+                placeholder="Ex: 175"
+              />
+            </div>
+
+            {/* PESO */}
+            <div>
+              <label className="block text-purple-200 mb-2">Peso (kg)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={dadosAntro.peso}
+                onChange={(e) => setDadosAntro({...dadosAntro, peso: e.target.value})}
+                className="w-full p-3 bg-purple-900/50 border border-purple-500/50 rounded-lg text-white"
+                placeholder="Ex: 70.5"
+              />
+            </div>
+
+            {/* GÊNERO */}
+            <div>
+              <label className="block text-purple-200 mb-2">Gênero</label>
+              <select
+                value={dadosAntro.genero}
+                onChange={(e) => setDadosAntro({...dadosAntro, genero: e.target.value})}
+                className="w-full p-3 bg-purple-900/50 border border-purple-500/50 rounded-lg text-white"
+              >
+                <option value="">Selecione...</option>
+                <option value="masculino">Masculino</option>
+                <option value="feminino">Feminino</option>
+              </select>
+            </div>
+
+            {/* CEP - INTEGRAÇÃO CLIMA */}
+            <div>
+              <label className="block text-purple-200 mb-2">CEP 🌤️</label>
+              <input
+                type="text"
+                value={dadosAntro.cep}
+                onChange={(e) => setDadosAntro({...dadosAntro, cep: e.target.value.replace(/\D/g, '').replace(/(\d{5})(\d)/, '$1-$2')})}
+                className="w-full p-3 bg-purple-900/50 border border-purple-500/50 rounded-lg text-white"
+                placeholder="Ex: 01310-100"
+                maxLength="9"
+              />
+              <p className="text-purple-300 text-xs mt-1">
+                💡 CEP será usado para análise clima/metabolismo personalizada
+              </p>
+            </div>
+
+            {/* ATIVIDADE FÍSICA */}
+            <div>
+              <label className="block text-purple-200 mb-2">Nível de Atividade</label>
+              <select
+                value={dadosAntro.atividadeFisica}
+                onChange={(e) => setDadosAntro({...dadosAntro, atividadeFisica: e.target.value})}
+                className="w-full p-3 bg-purple-900/50 border border-purple-500/50 rounded-lg text-white"
+              >
+                <option value="sedentario">Sedentário</option>
+                <option value="leve">Atividade Leve</option>
+                <option value="moderada">Atividade Moderada</option>
+                <option value="intensa">Atividade Intensa</option>
+                <option value="atleta">Atleta Profissional</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* ✅ SEÇÃO B: CONDIÇÕES ESPECIAIS */}
+        <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-red-500/30">
+          <h2 className="text-2xl font-bold mb-4 text-center">🏥 Condições Especiais</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* DOENÇAS */}
+            <div>
+              <label className="block text-red-200 mb-2">Doenças/Condições</label>
+              <div className="space-y-2">
+                {['Diabetes', 'Hipertensão', 'Colesterol Alto', 'Tireoide', 'Artrite', 'Outras'].map(doenca => (
+                  <label key={doenca} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={condicoes.doencas.includes(doenca)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setCondicoes({...condicoes, doencas: [...condicoes.doencas, doenca]});
+                        } else {
+                          setCondicoes({...condicoes, doencas: condicoes.doencas.filter(d => d !== doenca)});
+                        }
+                      }}
+                      className="rounded"
+                    />
+                    <span className="text-red-100">{doenca}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* MEDICAMENTOS */}
+            <div>
+              <label className="block text-red-200 mb-2">Medicamentos em Uso</label>
+              <div className="space-y-2">
+                {['Antidepressivos', 'Corticoides', 'Insulina', 'Anti-inflamatórios', 'Diuréticos', 'Outros'].map(med => (
+                  <label key={med} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={condicoes.medicamentos.includes(med)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setCondicoes({...condicoes, medicamentos: [...condicoes.medicamentos, med]});
+                        } else {
+                          setCondicoes({...condicoes, medicamentos: condicoes.medicamentos.filter(m => m !== med)});
+                        }
+                      }}
+                      className="rounded"
+                    />
+                    <span className="text-red-100">{med}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* CIRURGIAS */}
+            <div>
+              <label className="block text-red-200 mb-2">Cirurgias Realizadas</label>
+              <textarea
+                value={condicoes.cirurgias}
+                onChange={(e) => setCondicoes({...condicoes, cirurgias: e.target.value})}
+                className="w-full p-3 bg-red-900/30 border border-red-500/50 rounded-lg text-white h-20"
+                placeholder="Descreva cirurgias relevantes..."
+              />
+            </div>
+
+            {/* SEQUELAS */}
+            <div>
+              <label className="block text-red-200 mb-2">Sequelas/Limitações</label>
+              <textarea
+                value={condicoes.sequelas}
+                onChange={(e) => setCondicoes({...condicoes, sequelas: e.target.value})}
+                className="w-full p-3 bg-red-900/30 border border-red-500/50 rounded-lg text-white h-20"
+                placeholder="Limitações físicas ou funcionais..."
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* BOTÃO CALCULAR */}
+        <div className="text-center">
+          <button
+            onClick={calcularIMC}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-4 px-8 rounded-xl text-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+          >
+            🔬 Calcular & Interpretar
+          </button>
+        </div>
+        {/* ✅ SEÇÃO C: RESULTADOS INTELIGENTES */}
+        {resultados && (
+          <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-green-500/30 space-y-4">
+            <h2 className="text-2xl font-bold mb-4 text-center">📊 Análise Inteligente</h2>
+            
+            {/* IMC */}
+            <div className="text-center">
+              <p className="text-4xl font-bold text-green-400 mb-2">{resultados.imc}</p>
+              <p className="text-xl text-green-200">{resultados.classificacao}</p>
+            </div>
+
+            {/* INTERPRETAÇÃO */}
+            <div className="bg-green-900/30 p-4 rounded-lg">
+              <p className="text-green-100">{resultados.interpretacao}</p>
+            </div>
+
+            {/* ALERTAS */}
+            {resultados.alertas && resultados.alertas.length > 0 && (
+              <div className="space-y-2">
+                {resultados.alertas.map((alerta, index) => (
+                  <div key={index} className="bg-yellow-900/30 p-3 rounded-lg border-l-4 border-yellow-500">
+                    <p className="text-yellow-100 text-sm">{alerta}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* BIOMARCADORES */}
+            {resultados.biomarcadores && (
+              <div className="bg-purple-900/30 p-4 rounded-lg">
+                <p className="text-purple-100 text-sm">{resultados.biomarcadores}</p>
+              </div>
+            )}
+
+            {/* 🌤️ SEÇÃO CLIMÁTICA */}
+            {dadosClima && (
+              <div className="bg-blue-900/30 p-4 rounded-lg border border-blue-500/30">
+                <h3 className="text-lg font-bold text-blue-200 mb-3">🌤️ Análise Climática Personalizada</h3>
+                
+                {/* DADOS CLIMÁTICOS */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-blue-300">{dadosClima.temperatura}°C</p>
+                    <p className="text-blue-200 text-xs">Temperatura</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-blue-300">{dadosClima.sensacao}°C</p>
+                    <p className="text-blue-200 text-xs">Sensação</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-blue-300">{dadosClima.umidade}%</p>
+                    <p className="text-blue-200 text-xs">Umidade</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-blue-300">{dadosClima.pressao}</p>
+                    <p className="text-blue-200 text-xs">Pressão (hPa)</p>
+                  </div>
+                </div>
+
+                <p className="text-blue-100 mb-3">
+                  <strong>📍 {dadosClima.cidade}/{dadosClima.uf}</strong> - {dadosClima.descricao}
+                </p>
+                
+                {/* RECOMENDAÇÃO CLIMÁTICA */}
+                <div className="bg-blue-800/50 p-3 rounded-lg">
+                  <h4 className="font-bold text-blue-200 mb-2">🔬 Impacto Metabólico:</h4>
+                  <p className="text-blue-100 text-sm mb-2">
+                    {getRecomendacaoClimatica(dadosClima.temperatura, dadosClima.umidade, parseFloat(resultados.imc)).recomendacao}
+                  </p>
+                  <p className="text-blue-200 text-xs italic">
+                    {getRecomendacaoClimatica(dadosClima.temperatura, dadosClima.umidade, parseFloat(resultados.imc)).impactoMetabolico}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* AVISO NORMOSE */}
+            <div className="bg-red-900/30 p-4 rounded-lg border border-red-500/30">
+              <p className="text-red-200 text-sm">
+                <strong>⚠️ Cuidado com a "NORMOSE"!</strong> Lembre-se: IMC é uma ferramenta estatística. A composição corporal, idade biológica, fatores climáticos e contexto individual são fundamentais!
+              </p>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+};
+
+export default TelaAnthropometrica;

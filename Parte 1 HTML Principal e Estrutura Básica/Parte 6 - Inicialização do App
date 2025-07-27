@@ -1,0 +1,163 @@
+// =================================================================
+// --- INICIALIZAÇÃO DO APP ---
+// =================================================================
+
+// Configurações globais de inicialização
+const APP_CONFIG = {
+    storageKey: 'jornadaNutriUserData',
+    defaultLanguage: 'pt',
+    debugMode: true
+};
+
+// Serviço de logging
+const LogService = {
+    log: function(message, level = 'info') {
+        if (APP_CONFIG.debugMode) {
+            const timestamp = new Date().toISOString();
+            console[level](`[${timestamp}]${message}`);
+        }
+    },
+    error: function(message) {
+        this.log(message, 'error');
+    }
+};
+
+// Inicializar ao carregar a página
+window.onload = () => {
+    try {
+        // Inicialização segura
+        initializeApp();
+    } catch (error) {
+        LogService.error(`Erro na inicialização: ${error.message}`);
+        // Implementar fallback ou tratamento de erro
+        displayErrorScreen(error);
+    }
+};
+
+function initializeApp() {
+    // Remover classe hidden
+    document.getElementById('mainApp').classList.remove('hidden');
+    
+    // Recuperar dados com validação
+    const savedData = localStorage.getItem(APP_CONFIG.storageKey);
+    
+    if (savedData) {
+        try {
+            userData = JSON.parse(savedData);
+            validateUserData(userData);
+        } catch (error) {
+            LogService.error('Erro ao parsear dados salvos');
+            userData = createDefaultUserData();
+        }
+    } else {
+        userData = createDefaultUserData();
+    }
+    
+    // Configurações de acessibilidade
+    setupAccessibilityFeatures();
+    
+    // Configurar Chart.js
+    configureChartDefaults();
+    
+    // Iniciar na tela de boas-vindas
+    showScreen('welcomeScreen');
+    
+    LogService.log('Aplicativo inicializado com sucesso');
+}
+
+function createDefaultUserData() {
+    return {
+        assessmentScores: {},
+        categoryScores: {},
+        totalScore: 0,
+        language: APP_CONFIG.defaultLanguage
+    };
+}
+
+function validateUserData(data) {
+    // Validar estrutura dos dados
+    if (!data.assessmentScores) data.assessmentScores = {};
+    if (!data.categoryScores) data.categoryScores = {};
+    if (!data.language) data.language = APP_CONFIG.defaultLanguage;
+    
+    // Validar integridade dos dados
+    Object.keys(data.categoryScores).forEach(category => {
+        if (typeof data.categoryScores[category] !== 'number') {
+            delete data.categoryScores[category];
+        }
+    });
+}
+
+function setupAccessibilityFeatures() {
+    // Configurações de acessibilidade
+    document.body.setAttribute('lang', APP_CONFIG.defaultLanguage);
+    
+    // Adicionar modo de alto contraste
+    const highContrastToggle = document.createElement('button');
+    highContrastToggle.textContent = 'Alto Contraste';
+    highContrastToggle.onclick = toggleHighContrast;
+    document.body.appendChild(highContrastToggle);
+}
+
+function toggleHighContrast() {
+    document.body.classList.toggle('high-contrast');
+}
+
+function configureChartDefaults() {
+    // Configurações de estilo para o Chart.js
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.font.size = 14;
+    Chart.defaults.color = '#4b5563';
+    
+    // Configurações adicionais de acessibilidade
+    Chart.defaults.plugins.tooltip.enabled = true;
+}
+
+function displayErrorScreen(error) {
+    const errorScreen = document.createElement('div');
+    errorScreen.innerHTML = `
+        <div class="error-screen">
+            <h1>Ops! Algo deu errado</h1>
+            <p>${error.message}</p>
+            <button onclick="location.reload()">Recarregar</button>
+        </div>
+    `;
+    document.body.appendChild(errorScreen);
+}
+
+// Adicionar listener para tecla ESC com tratamento de erro
+document.addEventListener('keydown', function(event) {
+    try {
+        if (event.key === 'Escape') {
+            handleEscapeKey();
+        }
+    } catch (error) {
+        LogService.error(`Erro ao processar tecla ESC: ${error.message}`);
+    }
+});
+
+function handleEscapeKey() {
+    const currentScreen = screens.find(screen => 
+        !document.getElementById(screen).classList.contains('hidden')
+    );
+    
+    const screenNavigation = {
+        'welcomeScreen': null,
+        'idealizerScreen': 'welcomeScreen',
+        'anthropometricScreen': 'welcomeScreen',
+        'interpretationScreen': 'anthropometricScreen',
+        'assessmentScreen': 'interpretationScreen',
+        'resultScreen': 'assessmentScreen'
+    };
+    
+    const targetScreen = screenNavigation[currentScreen];
+    if (targetScreen) {
+        showScreen(targetScreen);
+    }
+}
+
+// Adicionar tratamento de erros não capturados
+window.addEventListener('error', function(event) {
+    LogService.error(`Erro não capturado: ${event.message}`);
+    // Opcional: enviar erro para serviço de monitoramento
+});

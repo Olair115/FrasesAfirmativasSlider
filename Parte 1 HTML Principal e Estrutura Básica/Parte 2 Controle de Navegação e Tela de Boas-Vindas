@@ -1,0 +1,155 @@
+// =================================================================
+// --- BLOCO A: CONTROLE GERAL E NAVEGAÇÃO ---
+// =================================================================
+const screens = ['welcomeScreen', 'idealizerScreen', 'anthropometricScreen', 'interpretationScreen', 'assessmentScreen', 'resultScreen'];
+let userData = {
+    age: null,
+    height: null,
+    weight: null,
+    bmi: null,
+    assessmentScores: {},
+    totalScore: 0
+};
+
+window.onload = () => {
+    document.getElementById('mainApp').classList.remove('hidden');
+    
+    // Recuperar dados se existirem
+    const savedData = localStorage.getItem('jornadaNutriUserData');
+    if (savedData) {
+        userData = JSON.parse(savedData);
+    }
+    
+    showScreen('welcomeScreen');
+};
+
+function showScreen(screenId) {
+    screens.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    });
+    const targetEl = document.getElementById(screenId);
+    if (targetEl) {
+        targetEl.classList.remove('hidden');
+    }
+    
+    // Renderizar o conteúdo da tela
+    if (screenId === 'welcomeScreen') renderWelcomeScreen();
+    if (screenId === 'idealizerScreen') renderIdealizerScreen();
+    if (screenId === 'anthropometricScreen') renderAnthropometricScreen();
+    if (screenId === 'interpretationScreen') renderInterpretationScreen();
+    if (screenId === 'assessmentScreen') renderAssessmentScreen();
+    if (screenId === 'resultScreen') renderResultScreen();
+}
+
+// =================================================================
+// --- BLOCO 2: TELA DO IDEALIZADOR ---
+// =================================================================
+function renderIdealizerScreen() {
+    const container = document.getElementById('idealizerScreen');
+    container.innerHTML = `
+        <div class="bg-white p-8 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-center text-indigo-600 mb-6">
+                Sobre o Idealizador
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-xl font-semibold text-blue-600 mb-4">
+                        Dr. Olair Rafael
+                    </h3>
+                    <p class="text-gray-700 mb-4">
+                        Médico especialista em Nutrição Integral e Longevidade, 
+                        com mais de 30 anos de experiência em transformação de vida.
+                    </p>
+                    <ul class="space-y-2 text-gray-600">
+                        <li>✓ Especialista em Medicina Preventiva</li>
+                        <li>✓ Mestre em Nutrição Funcional</li>
+                        <li>✓ Pesquisador em Longevidade</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-blue-600 mb-4">
+                        Filosofia do Programa
+                    </h3>
+                    <p class="text-gray-700">
+                        Nosso programa não é apenas uma dieta, mas uma jornada 
+                        de transformação holística. Focamos em:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-600 space-y-2 mt-4">
+                        <li>Nutrição personalizada</li>
+                        <li>Equilíbrio físico e mental</li>
+                        <li>Estilo de vida sustentável</li>
+                        <li>Prevenção de doenças</li>
+                        <li>Longevidade com qualidade</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-between">
+                <button 
+                    onclick="showScreen('welcomeScreen')" 
+                    class="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
+                >
+                    Voltar
+                </button>
+                <button 
+                    onclick="showScreen('anthropometricScreen')" 
+                    class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+                >
+                    Iniciar Autoavaliação
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Funções placeholder para as próximas telas
+function renderAnthropometricScreen() {
+    const container = document.getElementById('anthropometricScreen');
+    container.innerHTML = `
+        <div class="bg-white p-8 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-center text-indigo-600 mb-6">
+                Avaliação Antropométrica
+            </h2>
+            <p class="text-center text-gray-600">Em desenvolvimento...</p>
+        </div>
+    `;
+}
+
+function renderInterpretationScreen() {
+    const container = document.getElementById('interpretationScreen');
+    container.innerHTML = `
+        <div class="bg-white p-8 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-center text-indigo-600 mb-6">
+                Interpretação de Resultados
+            </h2>
+            <p class="text-center text-gray-600">Em desenvolvimento...</p>
+        </div>
+    `;
+}
+
+function renderAssessmentScreen() {
+    const container = document.getElementById('assessmentScreen');
+    container.innerHTML = `
+        <div class="bg-white p-8 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-center text-indigo-600 mb-6">
+                Avaliação Detalhada
+            </h2>
+            <p class="text-center text-gray-600">Em desenvolvimento...</p>
+        </div>
+    `;
+}
+
+function renderResultScreen() {
+    const container = document.getElementById('resultScreen');
+    container.innerHTML = `
+        <div class="bg-white p-8 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-center text-indigo-600 mb-6">
+                Resultados Finais
+            </h2>
+            <p class="text-center text-gray-600">Em desenvolvimento...</p>
+        </div>
+    `;
+}

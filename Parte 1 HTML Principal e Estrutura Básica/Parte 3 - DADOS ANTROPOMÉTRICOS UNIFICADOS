@@ -1,0 +1,173 @@
+// =================================================================
+// --- BLOCO UNIFICADO: AVALIAÇÃO E RESULTADOS ANTROPOMÉTRICOS ---
+// =================================================================
+
+// (Manter configurações anteriores)
+
+// Implementação de funções auxiliares
+function getLocalizedText(key, lang = APP_CONFIG.defaultLanguage) {
+    // Garantir fallback para português se língua não suportada
+    const selectedLang = APP_CONFIG.supportedLanguages.includes(lang) ? lang : 'pt';
+    return translations[selectedLang][key] || translations['pt'][key] || key;
+}
+
+function gerarRecomendacoesDetalhadas(recomendacoes) {
+    // Se não houver recomendações, retornar mensagem padrão
+    if (!recomendacoes || recomendacoes.length === 0) {
+        return `
+            <div class="recomendacao-padrao">
+                <p>Parabéns! Seus indicadores estão em níveis saudáveis.</p>
+                <p>Continue mantendo seus bons hábitos.</p>
+            </div>
+        `;
+    }
+
+    // Classificar recomendações por prioridade
+    const recomendacoesClassificadas = recomendacoes.sort((a, b) => {
+        const prioridadeMap = {
+            'alta': 3,
+            'media': 2,
+            'baixa': 1
+        };
+        return (prioridadeMap[b.prioridade] || 0) - (prioridadeMap[a.prioridade] || 0);
+    });
+
+    // Gerar HTML para recomendações
+    return `
+        <div class="recomendacoes-container">
+            ${recomendacoesClassificadas.map(rec => `
+                <div class="recomendacao-item ${rec.prioridade}">
+                    <div class="recomendacao-icone">
+                        ${getIconePrioridade(rec.prioridade)}
+                    </div>
+                    <div class="recomendacao-conteudo">
+                        <h4>${rec.titulo}</h4>
+                        <p>${rec.descricao}</p>
+                        ${rec.acoes ? `
+                            <div class="recomendacao-acoes">
+                                <strong>Ações sugeridas:</strong>
+                                <ul>
+                                    ${rec.acoes.map(acao => `<li>${acao}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function getIconePrioridade(prioridade) {
+    const iconMap = {
+        'alta': '🚨',
+        'media': '⚠️',
+        'baixa': 'ℹ️'
+    };
+    return iconMap[prioridade] || 'ℹ️';
+}
+
+// Função para gerar recomendações baseadas no resultado do IMC
+function gerarRecomendacoesIMC(resultadoIMC) {
+    const recomendacoes = [];
+
+    // Recomendações baseadas na categoria do IMC
+    switch (resultadoIMC.interpretacao.categoriaTradicional) {
+        case 'Abaixo do Peso':
+            recomendacoes.push({
+                titulo: 'Ganho de Peso Saudável',
+                descricao: 'Seu IMC indica que você está abaixo do peso ideal.',
+                prioridade: 'alta',
+                acoes: [
+                    'Consultar nutricionista',
+                    'Aumentar ingestão calórica com alimentos nutritivos',
+                    'Praticar exercícios de fortalecimento muscular'
+                ]
+            });
+            break;
+        
+        case 'Sobrepeso':
+            recomendacoes.push({
+                titulo: 'Emagrecimento Saudável',
+                descricao: 'Seu IMC sugere que você está com sobrepeso.',
+                prioridade: 'media',
+                acoes: [
+                    'Adotar dieta balanceada',
+                    'Praticar atividade física regularmente',
+                    'Consultar profissionais de saúde'
+                ]
+            });
+            break;
+        
+        case 'Obesidade':
+            recomendacoes.push({
+                titulo: 'Plano de Saúde Integrado',
+                descricao: 'Seu IMC indica obesidade, requerendo atenção especial.',
+                prioridade: 'alta',
+                acoes: [
+                    'Acompanhamento médico completo',
+                    'Plano nutricional personalizado',
+                    'Programa de atividade física supervisionado',
+                    'Avaliação de saúde mental'
+                ]
+            });
+            break;
+    }
+
+    // Adicionar recomendações específicas do Paradoxo de Hollyfield
+    if (resultadoIMC.interpretacao.interpretacoes.hollyfield) {
+        recomendacoes.push({
+            titulo: 'Análise Hollyfield',
+            descricao: 'Identificamos particularidades em sua composição corporal.',
+            prioridade: 'baixa',
+            acoes: [
+                'Investigar fatores metabólicos específicos',
+                'Realizar exames complementares'
+            ]
+        });
+    }
+
+    return recomendacoes;
+}
+
+// Atualizar função principal para incluir recomendações de IMC
+function renderResultadosAntropometricos(dadosInput, lang = APP_CONFIG.defaultLanguage) {
+    const resultadoIMC = calcularIMCMultifatorial(dadosInput);
+    
+    // Gerar recomendações específicas de IMC
+    const recomendacoesIMC = gerarRecomendacoesIMC(resultadoIMC);
+    
+    // Combinar com outras recomendações existentes
+    const todasRecomendacoes = [
+        ...recomendacoesIMC,
+        ...(resultadoIMC.recomendacoes || [])
+    ];
+
+    const container = document.getElementById('resultScreen');
+
+    const gerarHTMLResultados = () => {
+        return `
+            <div class="container-resultados">
+                <section class="resultado-imc">
+                    <h2>Resultado do IMC</h2>
+                    <div class="imc-detalhes">
+                        <span class="valor-imc">${resultadoIMC.imcAjustado.toFixed(2)}</span>
+                        <span class="categoria-imc">${resultadoIMC.interpretacao.categoriaTradicional}</span>
+                    </div>
+                </section>
+                
+                <section class="recomendacoes-detalhadas">
+                    <h3>${getLocalizedText('recommendationTitle', lang)}</h3>
+                    <div class="recomendacoes-grid">
+                        ${gerarRecomendacoesDetalhadas(todasRecomendacoes)}
+                    </div>
+                </section>
+            </div>
+        `;
+    };
+
+    container.innerHTML = gerarHTMLResultados();
+
+    // Trackear conclusão da avaliação
+    AnalyticsService.trackAssessmentCompletion(userData);
+}

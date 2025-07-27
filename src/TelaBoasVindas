@@ -1,0 +1,225 @@
+import React, { useEffect, useRef } from 'react';
+
+const TelaBoasVindas = ({ onProximo, onIdealizador }) => {
+  const audioRef = useRef(null);
+
+  // Inicia a sonorização quando a tela carrega
+  useEffect(() => {
+    // Música de fundo suave (você pode substituir por um arquivo local)
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3; // Volume baixo
+      audioRef.current.play().catch(e => console.log('Autoplay bloqueado:', e));
+    }
+  }, []);
+
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #1e1b4b, #581c87, #be185d)',
+      color: 'white',
+      padding: '24px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: 'Arial, sans-serif'
+    },
+    card: {
+      maxWidth: '900px',
+      background: 'rgba(0, 0, 0, 0.3)',
+      backdropFilter: 'blur(10px)',
+      borderRadius: '16px',
+      padding: '32px',
+      border: '1px solid rgba(168, 85, 247, 0.3)',
+      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+    },
+    titulo: {
+      fontSize: '2.5rem',
+      fontWeight: 'bold',
+      fontStyle: 'italic',
+      background: 'linear-gradient(to right, #c084fc, #f472b6)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      textAlign: 'center',
+      marginBottom: '24px'
+    },
+    secao: {
+      backgroundColor: 'rgba(147, 51, 234, 0.3)',
+      padding: '24px',
+      borderRadius: '12px',
+      border: '1px solid rgba(147, 51, 234, 0.5)',
+      marginBottom: '16px'
+    },
+    botao: {
+      background: 'linear-gradient(to right, #7c3aed, #ec4899, #f97316)',
+      color: 'white',
+      fontWeight: 'bold',
+      padding: '16px 32px',
+      borderRadius: '16px',
+      fontSize: '1.25rem',
+      border: 'none',
+      cursor: 'pointer',
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+      transition: 'transform 0.3s ease',
+      display: 'block',
+      margin: '40px auto',
+      textAlign: 'center'
+    }
+  };
+
+  return (
+    <div style={styles.container}>
+      {/* SONORIZAÇÃO - Música de fundo suave */}
+      <audio 
+        ref={audioRef}
+        loop
+        preload="auto"
+      >
+        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" type="audio/wav" />
+        {/* Você pode substituir por um arquivo local na pasta public: */}
+        {/* <source src="/musica-boas-vindas.mp3" type="audio/mpeg" /> */}
+      </audio>
+
+      <div style={styles.card}>
+        
+        <div style={{textAlign: 'center', marginBottom: '32px'}}>
+          <h2 style={{fontSize: '1.125rem', fontWeight: 'bold', color: '#60a5fa', letterSpacing: '2px'}}>
+            "TESTE GRÁTIS"
+          </h2>
+          <p style={{fontSize: '0.875rem', color: '#d1d5db', marginTop: '4px'}}>
+            Prazo de validade: 01 semana
+          </p>
+          
+          <h1 style={styles.titulo}>
+            JORNADA DA NUTRIÇÃO INTEGRAL
+          </h1>
+          
+          <p style={{marginTop: '24px', fontSize: '1.5rem', fontStyle: 'italic', color: '#d8b4fe', fontWeight: '500'}}>
+            🌟 Aceita as minhas <strong>Boas-Vindas!</strong> 🌟
+          </p>
+        </div>
+
+        <div style={{fontSize: '1.125rem', lineHeight: '1.75'}}>
+          <div style={styles.secao}>
+            <p>
+              Começa agora os seus primeiros passos na sua{' '}
+              <span style={{fontWeight: 'bold', color: '#fde047'}}>
+                <em>Evolução Consciente</em>
+              </span>{' '}
+              para um modo Alegre e Feliz de bem-viver! ✨
+            </p>
+          </div>
+
+          <div style={{...styles.secao, backgroundColor: 'rgba(59, 130, 246, 0.3)', borderColor: 'rgba(59, 130, 246, 0.5)'}}>
+            <p>
+              Você vai <strong>apreender (incorporar)</strong> diferentes técnicas e várias táticas 
+              que vão ajudar você a adquirir e fixar um estilo de vida e novos 
+              hábitos alimentares cada vez mais saudáveis! 
+            </p>
+            <p style={{marginTop: '16px'}}>
+              🏆 Você vai conquistar o <strong>"pote de ouro"</strong> ... 
+              a sua vida longa com vigor juvenil; você vai viver com muito mais 
+              satisfação até bem mais de <strong>100 anos</strong> e o melhor de tudo: 
+              <span style={{fontWeight: 'bold', color: '#86efac'}}>
+                bem longe de drogarias e hospitais!
+              </span>
+            </p>
+          </div>
+
+          <div style={{...styles.secao, backgroundColor: 'rgba(34, 197, 94, 0.3)', borderColor: 'rgba(34, 197, 94, 0.5)'}}>
+            <p>
+              💰 Poupe o seu dinheiro e o seu tempo para{' '}
+              <span style={{fontWeight: 'bold', color: '#fde047'}}>
+                <em>garantir mais vida aos seus míseros (mais de) 100 anos!</em>
+              </span>
+            </p>
+            <p style={{marginTop: '16px'}}>
+              E para que a sua jornada seja de modo o mais <em>suave e duradouro</em> possível, 
+              é claro que você se interessa em fazer as suas{' '}
+              <span style={{color: '#60a5fa', fontWeight: 'bold'}}>autoavaliações periódicas</span> a 
+              respeito dos nutrientes que você oferece para a saúde do seu corpo físico e para o 
+              seu bem-estar psicológico, <strong>24 horas por dia, 7 dias por semana</strong>; 
+              isto é, <em>tudo muda a todo instante!</em>
+            </p>
+          </div>
+
+          <div style={{textAlign: 'center', backgroundColor: 'rgba(107, 114, 128, 0.5)', padding: '24px', borderRadius: '12px', border: '1px solid rgba(107, 114, 128, 0.5)', margin: '24px 0'}}>
+            <p style={{fontSize: '1.5rem', fontWeight: 'bold', background: 'linear-gradient(to right, #fbbf24, #f97316)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
+              <em>"Toda GRANDE JORNADA é con-SEQUÊNCIA dos primeiros passos."</em>
+            </p>
+          </div>
+
+          <div style={{textAlign: 'center'}}>
+            <p style={{fontSize: '1.5rem', fontWeight: 'bold', color: '#c084fc'}}>
+              <em>Sempre melhorrrAndo... <strong style={{color: '#fde047'}}>NUNKAKABA!</strong></em> 🚀
+            </p>
+          </div>
+
+        </div>
+
+        {/* BOTÃO PRINCIPAL - Autoavaliação */}
+        <button
+          onClick={onProximo}
+          style={styles.botao}
+          onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+          onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+        >
+          <em>Vamos iniciar com a sua <strong>AUTOAVALIAÇÃO NUTRICIONAL</strong></em> 🍎
+        </button>
+
+        <div style={{textAlign: 'center', marginTop: '32px', opacity: 0.7}}>
+          <p style={{fontSize: '0.875rem', color: '#9ca3af'}}>
+            ✨ Sua jornada para uma vida plena e saudável começa agora! ✨
+          </p>
+        </div>
+
+        {/* RODAPÉ - CONVITE PARA CONHECER O IDEALIZADOR */}
+        <div style={{
+          textAlign: 'center', 
+          marginTop: '24px', 
+          padding: '20px',
+          background: 'rgba(34, 197, 94, 0.2)',
+          borderRadius: '12px',
+          border: '1px solid rgba(34, 197, 94, 0.4)'
+        }}>
+          <p style={{
+            fontSize: '1rem', 
+            color: '#86efac', 
+            fontWeight: '600',
+            marginBottom: '12px'
+          }}>
+            🩺 <strong>MEDICINA INTEGRATIVA</strong>
+          </p>
+          <button 
+            onClick={onIdealizador}
+            style={{
+              background: 'transparent',
+              color: '#10b981',
+              border: '2px solid #10b981',
+              padding: '12px 20px',
+              borderRadius: '10px',
+              fontSize: '0.95rem',
+              cursor: 'pointer',
+              fontWeight: '600',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = '#10b981';
+              e.target.style.color = 'white';
+              e.target.style.transform = 'scale(1.05)';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = 'transparent';
+              e.target.style.color = '#10b981';
+              e.target.style.transform = 'scale(1)';
+            }}
+          >
+            Saiba mais sobre o idealizador deste aplicativo 👨‍⚕️
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default TelaBoasVindas;

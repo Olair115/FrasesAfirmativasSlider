@@ -1,0 +1,311 @@
+/* 🎵 BACKGROUND VIDEO AMBIENTE - CHILL GUITAR EXPERIENCE 🎸 */
+
+.background-video-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none; /* Não interfere na interação */
+}
+
+.background-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+  opacity: 0.08; /* Muito sutil - apenas atmosfera */
+  filter: blur(3px) brightness(0.25) contrast(0.8);
+  transition: all 0.8s ease-in-out;
+}
+
+/* Quando carregado - fade in suave */
+.background-video.loaded {
+  opacity: 0.12;
+  filter: blur(2px) brightness(0.3) contrast(0.9);
+}
+
+/* Overlay para garantir legibilidade */
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg, 
+    rgba(11, 13, 23, 0.92) 0%, 
+    rgba(26, 29, 41, 0.88) 50%,
+    rgba(30, 27, 75, 0.90) 100%
+  );
+  pointer-events: none;
+}
+
+/* 🎛️ CONTROLES DISCRETOS - CANTO INFERIOR DIREITO */
+.video-controls {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(11, 13, 23, 0.85);
+  padding: 10px 16px;
+  border-radius: 30px;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(139, 92, 246, 0.1);
+  z-index: 1000;
+  pointer-events: auto; /* Controles são interativos */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.7;
+}
+
+.video-controls:hover {
+  background: rgba(11, 13, 23, 0.95);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(139, 92, 246, 0.2);
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+/* 🔘 BOTÕES DE CONTROLE */
+.control-btn {
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  color: #E2E8F0;
+  cursor: pointer;
+  padding: 8px 10px;
+  border-radius: 20px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.control-btn:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.control-btn:active {
+  transform: scale(0.98);
+}
+
+/* Estado mudo */
+.mute-btn.muted {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #FCA5A5;
+}
+
+.mute-btn.muted:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+/* 🎚️ CONTROLE DE VOLUME */
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  background: rgba(139, 92, 246, 0.05);
+  border-radius: 20px;
+  border: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+.volume-slider {
+  width: 70px;
+  height: 6px;
+  background: rgba(139, 92, 246, 0.2);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  transition: all 0.2s ease;
+}
+
+.volume-slider:hover {
+  background: rgba(139, 92, 246, 0.3);
+}
+
+/* Thumb do slider - WebKit */
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 
+    0 2px 8px rgba(139, 92, 246, 0.4),
+    0 0 0 2px rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 
+    0 4px 12px rgba(139, 92, 246, 0.6),
+    0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+/* Thumb do slider - Firefox */
+.volume-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 
+    0 2px 8px rgba(139, 92, 246, 0.4),
+    0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+/* Label do volume */
+.volume-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #94A3B8;
+  min-width: 30px;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Botão play (fallback) */
+.play-btn {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  animation: pulse 2s infinite;
+}
+
+.play-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* 📱 RESPONSIVO - MOBILE */
+@media (max-width: 768px) {
+  .video-controls {
+    bottom: 16px;
+    right: 16px;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  
+  .control-btn {
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 14px;
+    padding: 6px 8px;
+  }
+  
+  .volume-control {
+    padding: 2px 6px;
+  }
+  
+  .volume-slider {
+    width: 50px;
+    height: 4px;
+  }
+  
+  .volume-slider::-webkit-slider-thumb {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .volume-label {
+    font-size: 10px;
+    min-width: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .video-controls {
+    bottom: 12px;
+    right: 12px;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+  
+  .volume-control {
+    display: none; /* Esconde slider em telas muito pequenas */
+  }
+  
+  .control-btn {
+    min-width: 28px;
+    min-height: 28px;
+    font-size: 12px;
+  }
+}
+
+/* 🌟 ANIMAÇÕES ESPECIAIS */
+@keyframes videoFadeIn {
+  from { 
+    opacity: 0;
+    filter: blur(5px) brightness(0.1);
+  }
+  to { 
+    opacity: 0.12;
+    filter: blur(2px) brightness(0.3);
+  }
+}
+
+.background-video.loaded {
+  animation: videoFadeIn 3s ease-in-out;
+}
+
+/* Estado quando usuário está interagindo */
+.app-focused .background-video {
+  opacity: 0.05;
+  filter: blur(4px) brightness(0.2);
+}
+
+/* Transições suaves entre seções */
+.section-transition .background-video {
+  opacity: 0.15;
+  filter: blur(1px) brightness(0.4);
+  transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 🎯 INDICADOR DE STATUS SUTIL */
+.video-controls::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 2px;
+  background: linear-gradient(90deg, #8B5CF6 0%, #A855F7 100%);
+  border-radius: 1px;
+  opacity: 0.6;
+}
+
+/* Hover effect no container inteiro */
+.background-video-container:hover .video-controls {
+  opacity: 1;
+}
